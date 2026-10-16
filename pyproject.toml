@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "piao"
+version = "0.1.0"
+description = "QQ 群友人格分身：聊天记录 → Skill → QQ 机器人（含 GPT-SoVITS 语音）"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=1.0",
+    "websockets>=12",
+]
+
+[project.optional-dependencies]
+# QQ 语音（SILK）解码与发送语音
+voice = ["pilk>=0.2", "numpy>=1.24", "soundfile>=0.12"]
+# 直播素材切片后的说话人过滤
+speaker = ["resemblyzer>=0.1.4"]
+# 语音转写（二选一即可）
+asr-funasr = ["funasr>=1.1", "modelscope"]
+asr-whisper = ["faster-whisper>=1.0"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+piao = "piao.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["piao*"]
+
+[tool.setuptools.package-data]
+"piao.templates" = ["*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,31 @@
+# 隐私数据：聊天记录、语音、直播录像、生成的中间产物都不要提交
+/data/**
+!/data/**/
+!/data/**/.gitkeep
+
+# 手写的人设和由真实聊天记录生成的 Skill 含个人信息，默认不入库
+# （仓库是私有的、并且本人同意的话，可以删掉这几行）
+/persona/persona.md
+/skill/**
+!/skill/.gitkeep
+
+# 本地配置（含 token）
+/config.toml
+
+# 音频 / 模型
+*.wav
+*.flac
+*.mp3
+*.silk
+*.amr
+*.pth
+*.ckpt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+build/
+dist/

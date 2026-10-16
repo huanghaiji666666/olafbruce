@@ -1,0 +1,81 @@
+# 复制为 config.toml 后修改。config.toml 已被 .gitignore 忽略。
+
+[persona]
+name = "轻轻的飘"
+qq = "2044715303"
+# 群里大家怎么称呼飘；消息里出现这些词会被视为“在叫飘”
+aliases = ["飘", "飘飘", "轻轻的飘"]
+# 生成的 Skill 存放目录
+skill_dir = "skill/qingqingdepiao"
+# 手写的人设补充（从 persona/persona.example.md 复制）
+persona_file = "persona/persona.md"
+
+[data]
+work_dir = "data/work"
+
+[llm]
+# Claude API 凭据从环境变量 ANTHROPIC_API_KEY 读取；自定义 API 地址用 ANTHROPIC_BASE_URL
+model = "claude-opus-5-5"
+# 群聊回复不需要深度推理，low 延迟最低；觉得回复不够聪明可以调到 medium
+effort = "low"
+max_tokens = 8000
+# 被安全分类器拒答时由服务端自动换模型重试（Haiku 不支持，会自动关闭）
+fallbacks = true
+
+[bot]
+# NapCat（OneBot v11）正向 WebSocket 地址与 token
+ws_url = "ws://127.0.0.1:3001"
+access_token = ""
+# 只在这些群里说话（群号）。留空 = 不在任何群说话，防止误入
+groups = []
+# 可以用 /飘 off|on|status 管理机器人的 QQ 号
+admins = []
+# 不理会的 QQ 号（比如别的机器人）
+ignore_users = []
+
+# 被问到“你是不是机器人/AI”时如实承认。强烈建议保持开启
+self_disclose = true
+
+reply_on_at = true          # 被 @ 或被回复时必回
+reply_on_alias = true       # 有人叫“飘”时回复
+alias_reply_prob = 0.85
+random_reply_prob = 0.03    # 没人叫也随机插话的概率（模仿本人活跃度）
+cooldown_seconds = 25       # 随机插话的冷却
+max_replies_per_minute = 6
+debounce_seconds = 2.5      # 触发后等几秒，把连发的消息收齐再回
+context_messages = 40       # 给模型看的最近群消息条数
+typing_cps = 7.0            # 模拟打字速度（字/秒），用于分条发送的间隔
+quote_trigger = true        # 被 @ 时引用对方消息回复
+
+[voice]
+enabled = false
+# GPT-SoVITS 的 api_v2.py 地址（python api_v2.py -a 127.0.0.1 -p 9880）
+api_url = "http://127.0.0.1:9880"
+# 参考音频：路径是 GPT-SoVITS 那台机器上的路径；3~10 秒、干净、语气自然
+ref_audio = "/path/to/ref.wav"
+ref_text = "参考音频对应的文字"
+ref_lang = "zh"
+text_lang = "zh"
+probability = 0.08          # 普通短回复变成语音的概率
+max_chars = 40              # 超过这个长度不发语音
+encode_silk = true          # 本地转成 QQ 的 SILK 再发（需要 ffmpeg + pilk）
+
+# ---- 直播素材降噪（piao voice msst）----
+# MSST = https://github.com/ZFTurbo/Music-Source-Separation-Training ，模型在它的 README 里下载。
+# 每一级的 keep 必须是该模型 config 里 instruments 中的一个名字。
+msst_dir = "/path/to/Music-Source-Separation-Training"
+msst_python = "python"   # MSST 自己的虚拟环境里的 python
+
+# 第一级：分离人声，去掉 BGM 和打牌音效
+[[voice.msst_stages]]
+model_type = "mel_band_roformer"
+config = "configs/你的人声模型配置.yaml"
+checkpoint = "weights/你的人声模型.ckpt"
+keep = "vocals"
+
+# 第二级（可选）：去噪 / 去混响，直播麦克风底噪大时加上
+# [[voice.msst_stages]]
+# model_type = "mel_band_roformer"
+# config = "configs/你的降噪模型配置.yaml"
+# checkpoint = "weights/你的降噪模型.ckpt"
+# keep = "dry"
