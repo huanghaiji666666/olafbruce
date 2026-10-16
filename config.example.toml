@@ -27,7 +27,7 @@ fallbacks = true
 ws_url = "ws://127.0.0.1:3001"
 access_token = ""
 # 只在这些群里说话（群号）。留空 = 不在任何群说话，防止误入
-groups = []
+groups = [829124409]        # 主群
 # 可以用 /飘 off|on|status 管理机器人的 QQ 号
 admins = []
 # 不理会的 QQ 号（比如别的机器人）
