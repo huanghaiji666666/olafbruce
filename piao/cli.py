@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -23,6 +24,23 @@ def _need(path: Path, hint: str) -> Path:
 
 
 # ---------------------------------------------------------------- 数据 → Skill
+
+def cmd_ntqq(cfg: Config, args: argparse.Namespace) -> None:
+    from .chatlog.ntqq import WrongKeyError, extract_group_chats
+
+    groups = None if args.all_groups else (args.group or [str(g) for g in cfg.bot.groups] or None)
+    try:
+        counts, bad_pages = extract_group_chats(args.db, args.out, args.key, groups)
+    except (WrongKeyError, ValueError, RuntimeError) as e:
+        sys.exit(str(e))
+    if bad_pages:
+        print(f"注意：有 {bad_pages} 页校验失败，库可能有损坏，这部分消息可能缺失或乱码")
+    if not counts:
+        which = f"群 {', '.join(groups)} 的" if groups else ""
+        sys.exit(f"没有提取到{which}消息。确认这个号在群里，或者加 --all-groups 看看库里有哪些群")
+    for group, n in sorted(counts.items(), key=lambda kv: -kv[1]):
+        print(f"群 {group}：{n} 条 → {Path(args.out) / f'ntqq_{group}.jsonl'}")
+
 
 def cmd_ingest(cfg: Config, args: argparse.Namespace) -> None:
     from collections import Counter
@@ -235,6 +253,14 @@ def build_parser() -> argparse.ArgumentParser:
     def add_ingest_args(sp: argparse.ArgumentParser) -> None:
         sp.add_argument("paths", nargs="+", help="聊天记录文件或目录（.txt/.json/.jsonl/.csv）")
         sp.add_argument("--target", help="目标 QQ 号（默认取配置里的 persona.qq）")
+
+    sp = sub.add_parser("ntqq", help="从 QQNT 本地数据库 nt_msg.db 直接提取群聊记录（不需要 NapCat）")
+    sp.add_argument("db", help="nt_msg.db（加密原文件，或已经解密的 SQLite）")
+    sp.add_argument("--key", default=os.environ.get("NTQQ_DB_KEY"), help="数据库密钥（也可以用环境变量 NTQQ_DB_KEY）")
+    sp.add_argument("--group", action="append", help="只提取这个群，可重复；默认取配置里的 bot.groups")
+    sp.add_argument("--all-groups", action="store_true", help="提取库里所有群")
+    sp.add_argument("--out", default="data/raw/chat", help="输出目录（默认 data/raw/chat）")
+    sp.set_defaults(func=cmd_ntqq)
 
     sp = sub.add_parser("ingest", help="解析并清洗聊天记录")
     add_ingest_args(sp)

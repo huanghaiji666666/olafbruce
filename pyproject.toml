@@ -21,6 +21,8 @@ speaker = ["resemblyzer>=0.1.4"]
 # 语音转写（二选一即可）
 asr-funasr = ["funasr>=1.1", "modelscope"]
 asr-whisper = ["faster-whisper>=1.0"]
+# 直接解密 QQNT 本地数据库 nt_msg.db（piao ntqq）
+ntqq = ["cryptography>=41"]
 dev = ["pytest>=8"]
 
 [project.scripts]

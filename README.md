@@ -50,10 +50,29 @@ export ANTHROPIC_API_KEY=...  # Claude API 密钥
 | QQNT：QQ Chat Exporter 等导出工具 | `.json` / `.jsonl`，字段名宽松匹配（`sender.uin`、`content.text`、`timestamp` 毫秒…） |
 | NapCat / OneBot 消息日志 | `.json` / `.jsonl`，支持消息段数组和 CQ 码 |
 | 自己整理的 | `.jsonl` / `.csv`，字段 `time, sender_id, sender_name, text` |
+| QQNT 本地数据库 `nt_msg.db` | 用 `piao ntqq` 直接解密提取，见下 |
 
 识别不了的格式，在 `piao/chatlog/parsers.py` 的 `record_to_message` 里加几个字段名即可。
 
 只导出“飘的发言”也能用，但**整个群的完整记录效果好得多**：既能学飘怎么接别人的话，也能对比出哪些词是飘独有的口癖。
+
+### NapCat 登不上时：直接读 QQ 的本地数据库
+
+QQNT 把聊天记录存在 SQLCipher 加密的 `nt_msg.db` 里。拿到密钥就能直接读，不需要 NapCat，也不用登录机器人账号。能提取到的只有**这台电脑上的 QQ 本地有的记录**，所以要用一直在主群里的大号。手机上的老记录要先用 QQ 的“聊天记录迁移”迁到电脑上。
+
+1. **找到数据库**：默认在 `文档\Tencent Files\<QQ号>\nt_qq\nt_db\nt_msg.db`。改过存储位置的，到 QQ 设置里看聊天记录保存在哪。
+2. **取密钥**：照 [QQDecrypt 的 Windows NTQQ 教程](https://qqbackup.github.io/QQDecrypt/) 用 PowerShell 脚本 `windows_ntqq_get_key.ps1` 取，密钥是 16 位字符串。这个脚本会调试 QQ 进程，先下载下来读一遍再运行。教程注明只在 QQ 9.9.32-51246 上验证过，也提醒有账号风险。
+3. **完全退出 QQ，把 `nt_msg.db` 复制出来**，之后只处理副本。旁边如果有 `nt_msg.db-wal`，说明最近的消息还没写回主文件，退出 QQ 后它会合并进去。
+4. 提取：
+
+   ```bash
+   pip install -e ".[ntqq]"
+   piao ntqq 副本/nt_msg.db --key '你的密钥'      # 也可以设置环境变量 NTQQ_DB_KEY
+   ```
+
+   默认只提取 `bot.groups` 里的群（主群 829124409），输出 `data/raw/chat/ntqq_829124409.jsonl`。`--group 群号` 指定别的群（可重复），`--all-groups` 提取全部群。如果已经用 [nt_msg_db_util](https://github.com/QQBackup/nt_msg_db_util) 解密出了明文库，直接 `piao ntqq nt_msg_plain.db` 就行，不用填密钥。
+
+只提取文字，图片、表情、语音等换成 `[图片]`、`[表情]`、`[语音]` 这样的占位符，系统提示和引用块会去掉。
 
 ## 第二步：生成 Skill
 
