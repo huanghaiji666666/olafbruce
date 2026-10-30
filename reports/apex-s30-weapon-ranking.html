@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apex S30 武器排行</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --border: #dfe3e8;
+    --text: #1b1f24;
+    --muted: #5d6673;
+    --accent: #c8102e;
+    --tier-s: #d9480f;
+    --tier-a: #b7791f;
+    --tier-b: #2f7d4f;
+    --tier-c: #2b6cb0;
+    --tier-d: #6b7280;
+    --bar: #c8102e;
+    --bar-track: #e9ecf0;
+    --buff: #2f7d4f;
+    --nerf: #c53030;
+    --sys: #2b6cb0;
+    --warn-bg: #fff8e6;
+    --warn-border: #f0c36d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111418;
+      --surface: #191d23;
+      --surface-2: #20252c;
+      --border: #2e353e;
+      --text: #e7eaee;
+      --muted: #9aa4b1;
+      --accent: #ff4d5e;
+      --tier-s: #ff8a4c;
+      --tier-a: #f2c14e;
+      --tier-b: #5fcf8b;
+      --tier-c: #6cb2ff;
+      --tier-d: #9aa4b1;
+      --bar: #ff4d5e;
+      --bar-track: #2a3038;
+      --buff: #5fcf8b;
+      --nerf: #ff7a7a;
+      --sys: #6cb2ff;
+      --warn-bg: #2a2416;
+      --warn-border: #7a6224;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111418;
+    --surface: #191d23;
+    --surface-2: #20252c;
+    --border: #2e353e;
+    --text: #e7eaee;
+    --muted: #9aa4b1;
+    --accent: #ff4d5e;
+    --tier-s: #ff8a4c;
+    --tier-a: #f2c14e;
+    --tier-b: #5fcf8b;
+    --tier-c: #6cb2ff;
+    --tier-d: #9aa4b1;
+    --bar: #ff4d5e;
+    --bar-track: #2a3038;
+    --buff: #5fcf8b;
+    --nerf: #ff7a7a;
+    --sys: #6cb2ff;
+    --warn-bg: #2a2416;
+    --warn-border: #7a6224;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 16px 64px; }
+  header h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: .5px; }
+  header h1 span { color: var(--accent); }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi .label { color: var(--muted); font-size: 12px; }
+  .kpi .value { font-size: 20px; font-weight: 700; margin-top: 2px; }
+  .kpi .note { color: var(--muted); font-size: 12px; }
+  .warn { background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; padding: 12px 16px; margin-bottom: 24px; font-size: 14px; }
+  h2 { font-size: 19px; margin: 32px 0 12px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .chip { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 13px; }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  input[type="search"] { border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 8px; padding: 6px 10px; font-size: 13px; min-width: 160px; flex: 1 1 160px; max-width: 260px; }
+  .table-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 980px; font-size: 13.5px; }
+  th, td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  th { background: var(--surface-2); font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable::after { content: " ↕"; color: var(--muted); font-size: 11px; }
+  th.sorted-asc::after { content: " ↑"; color: var(--accent); }
+  th.sorted-desc::after { content: " ↓"; color: var(--accent); }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-2); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rank { font-weight: 700; color: var(--muted); width: 36px; }
+  td.nw { white-space: nowrap; }
+  .name b { display: block; }
+  .name small { color: var(--muted); }
+  .cp { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 4px; background: var(--accent); color: #fff; margin-left: 4px; vertical-align: 1px; }
+  .tier { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 5px; font-weight: 700; font-size: 12px; color: #fff; }
+  .tier.S { background: var(--tier-s); } .tier.A { background: var(--tier-a); } .tier.B { background: var(--tier-b); }
+  .tier.C { background: var(--tier-c); } .tier.D { background: var(--tier-d); }
+  .tier.none { background: transparent; color: var(--muted); border: 1px dashed var(--border); }
+  .score-cell { min-width: 150px; }
+  .score { display: flex; align-items: center; gap: 8px; }
+  .score .track { flex: 1; height: 8px; background: var(--bar-track); border-radius: 4px; overflow: hidden; }
+  .score .fill { height: 100%; background: var(--bar); border-radius: 4px; }
+  .score .v { font-weight: 700; font-variant-numeric: tabular-nums; width: 34px; text-align: right; }
+  .spread { font-size: 12px; color: var(--muted); }
+  .spread.hi { color: var(--nerf); font-weight: 600; }
+  .tag { display: inline-block; font-size: 11.5px; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .tag.buff { color: var(--buff); } .tag.nerf { color: var(--nerf); } .tag.sys { color: var(--sys); }
+  .chg { font-size: 12.5px; color: var(--muted); max-width: 300px; }
+  .flag { color: var(--nerf); cursor: help; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; font-size: 14px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; }
+  .card ul { margin: 0; padding-left: 18px; }
+  .method { font-size: 14px; }
+  .method code { background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+  footer { margin-top: 32px; font-size: 13px; color: var(--muted); }
+  footer a { color: var(--accent); }
+  footer li { margin-bottom: 3px; }
+  .theme-btn { float: right; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <button class="chip theme-btn" id="themeBtn" type="button">切换深/浅色</button>
+    <h1>Apex 英雄 · <span>第 30 赛季「Marked」</span>武器数据排行</h1>
+    <p class="sub">数据截至 2026-10-30 · 包含开季补丁（8/3）与季中补丁（9/14）的全部武器改动 · 共 29 把武器</p>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="warn">
+    <strong>先说明数据口径：</strong>EA/Respawn 没有公开各武器的使用率和胜率，本赛季也没找到可信的第三方武器使用率统计。
+    所以本榜单的「综合评分」由三份 S30 强度榜<strong>汇总</strong>得出（两份编辑榜和一份社区投票榜），口径见文末。
+    「伤害/射速/DPS/弹匣」引自第三方 S30 数据表，其中由官方补丁改动过的数值已和官方补丁说明核对；没改动过的数值<strong>没有官方来源</strong>，仅作参考。
+  </div>
+
+  <h2>综合强度排行</h2>
+  <div class="controls" id="filters"></div>
+  <div class="table-scroll">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th class="sortable" data-key="rank">#</th>
+          <th class="sortable" data-key="name">武器</th>
+          <th class="sortable" data-key="cls">类型</th>
+          <th>弹药</th>
+          <th class="sortable sorted-desc" data-key="score">综合评分 (0–4)</th>
+          <th title="Skycoach 编辑榜">Sky</th>
+          <th title="Everything Edinburgh 编辑榜">EE</th>
+          <th title="RankedMeta 社区投票榜（10/26）">RM</th>
+          <th class="sortable" data-key="dmg">伤害/发</th>
+          <th class="sortable" data-key="rpm">射速 RPM</th>
+          <th class="sortable" data-key="dps">DPS</th>
+          <th>弹匣 (白→紫)</th>
+          <th>S30 改动</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2>本赛季改动速览</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>空投箱轮换</h3>
+      <ul>
+        <li>30-30 连发枪进入空投箱，替换 G7 侦查枪</li>
+        <li>30-30：伤害 43→51，开镜蓄力 0.25s，换弹加快，双发霰弹换成 Shattercaps</li>
+        <li>空投箱武器：Kraber、L-STAR、30-30</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>开季削弱（8/3）</h3>
+      <ul>
+        <li>R-99：伤害 13→12</li>
+        <li>转换者：伤害 19→18，弹匣 白24→20 / 蓝26→22 / 紫30→26</li>
+        <li>RE-45：伤害 17→16，紫弹匣 27→24</li>
+        <li>赫姆洛克：破门冲锋冷却 25→30s，伤害 22→21，对护盾墙和建筑的伤害 -50%</li>
+        <li>G7 侦查枪：回到地面，伤害 37→33，射速降低，去掉双发扳机，不能装狙击镜</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>季中加强（9/14）</h3>
+      <ul>
+        <li>三重式：开镜射速提高，蓝弹匣 8→9</li>
+        <li>波塞克弓：箭矢储备 40→60，爆炸箭 7→10</li>
+        <li>充能步枪：最远距离伤害 99→110（200m 以上），选择射击伤害惩罚 40%→25%</li>
+        <li>霰弹枪锁定配件「Executioner」解锁费用 375→275</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>系统改动</h3>
+      <ul>
+        <li>能量弹药从地图上移除，能量武器改为内置弹药储备，每 18 秒回满一个弹匣（开火和换弹时暂停）</li>
+        <li>储备量（弹匣数）：L-STAR 4；哈沃克、复仇女神、专注 3；RE-45、电能、三重式 2</li>
+        <li>新增「腐化配件」，每把枪最多装一个</li>
+        <li>金色武器默认带 Accelerator 配件</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>评分方法</h2>
+  <div class="method">
+    <p>每份榜单的等级换算成分数：<code>S=4</code> <code>A=3</code> <code>B=2</code> <code>C=1</code> <code>D=0</code>，取有评级的榜单的平均分。
+    同分时，三份榜单分歧小的排前面，再看 DPS。「分歧」= 最高分减最低分，≥2 标红，表示榜单之间意见差别很大。</p>
+    <ul>
+      <li><strong>Sky</strong>（Skycoach，S30 编辑榜）：把空投箱武器单独排名，没放进 S–D 等级，所以这三把只用另外两份榜单算分。</li>
+      <li><strong>EE</strong>（Everything Edinburgh，9/25 发布，数据截至 8 月）：发布于季中补丁之后，但数值是季中补丁前的，所以没反映三重式、波塞克弓和充能步枪的加强。</li>
+      <li><strong>RM</strong>（RankedMeta 社区投票，10/26 更新）：最新的一份，但只有 14 人投票，样本很小。</li>
+    </ul>
+    <p>⚠ 平行步枪的单发伤害有冲突：EE 写 20，Skycoach 写身体 18，表里用 20 并标了 <span class="flag">⚑</span>。</p>
+  </div>
+
+  <footer>
+    <p><strong>来源</strong></p>
+    <ul>
+      <li><a href="https://www.ea.com/games/apex-legends/apex-legends/news/marked-midseason-patch-notes">EA 官方：Marked 季中补丁说明（2026-09-14）</a></li>
+      <li><a href="https://allthings.how/apex-legends-season-30-every-weapon-change-in-the-marked-update/">AllThings.How：S30 全部武器改动</a></li>
+      <li><a href="https://skycoach.gg/blog/apex-legends/articles/weapon-tier-list-season-30">Skycoach：S30 武器强度榜</a></li>
+      <li><a href="https://everythingedinburgh.com/games/gaming/apex-legends-best-guns/">Everything Edinburgh：S30 强度榜与武器数据</a></li>
+      <li><a href="https://rankedmeta.com/apex-legends/weapon-tier-list">RankedMeta：社区武器强度榜（2026-10-26）</a></li>
+      <li><a href="https://dotesports.com/apex-legends/news/start-end-dates-apex-legends-seasons">Dot Esports：赛季日期（S30 于 2026-08-04 开始）</a></li>
+    </ul>
+    <p>S30 预计在 2026-11-03 前后结束（非官方日期），下赛季的平衡改动可能让本榜失效。</p>
+  </footer>
+</div>
+
+<script>
+const T = { S: 4, A: 3, B: 2, C: 1, D: 0 };
+// [英文名, 中文名, 类型, 弹药, 空投, Sky, EE, RM, 伤害, RPM, DPS, 弹匣, 改动标签, 改动说明, 数据冲突]
+const RAW = [
+  ["Kraber .50-Cal", "克雷贝尔", "狙击枪", "特殊", 1, null, "S", "S", 150, 38, null, "4", [], "未改动", ""],
+  ["L-STAR EMG", "L-STAR", "机枪", "能量", 1, null, "S", "S", 20, 600, 200, "过热机制", [["sys", "能量储备"]], "储备 4 个弹匣", ""],
+  ["30-30 Repeater", "30-30 连发枪", "射手步枪", "重型", 1, null, "S", "A", 51, 139, 118, "50 发储备", [["buff", "进空投"], ["buff", "加强"]], "伤害 43→51，开镜蓄力 0.25s，换弹加快，改用 Shattercaps", ""],
+  ["Prowler Burst PDW", "猎兽冲锋枪", "冲锋枪", "重型", 0, "S", "A", "S", 16, 714, 190, "20→35", [], "未改动", ""],
+  ["C.A.R. SMG", "C.A.R.", "冲锋枪", "轻型/重型", 0, "A", "S", "S", 14, 930, 217, "20→30", [], "未改动", ""],
+  ["Alternator SMG", "转换者", "冲锋枪", "轻型", 0, "A", "S", "S", 18, 600, 180, "18→26", [["nerf", "削弱"]], "伤害 19→18，双发扳机 15→14，弹匣缩小", ""],
+  ["R-99 SMG", "R-99", "冲锋枪", "轻型", 0, "A", "S", "A", 12, 1080, 216, "17→24", [["nerf", "削弱"]], "伤害 13→12", ""],
+  ["Hemlok Burst AR", "赫姆洛克", "突击步枪", "重型", 0, "A", "S", "A", 21, 462, 162, "16→25", [["nerf", "削弱"]], "伤害 22→21，破门冲锋冷却 25→30s，对建筑伤害 -50%", ""],
+  ["Volt SMG", "电能冲锋枪", "冲锋枪", "能量", 0, "S", "A", "A", 16, 720, 192, "20→27", [["sys", "能量储备"]], "储备 2 个弹匣", ""],
+  ["Nemesis Burst AR", "复仇女神", "突击步枪", "能量", 0, "S", "S", "B", 17, 637, 180, "20→32", [["sys", "能量储备"]], "储备 3 个弹匣", ""],
+  ["R-301 Carbine", "R-301 卡宾枪", "突击步枪", "轻型", 0, "A", "A", "A", 15, 810, 203, "18→28", [], "未改动", ""],
+  ["VK-47 Flatline", "平行步枪", "突击步枪", "重型", 0, "S", "A", "B", 20, 600, 200, "20→30", [], "未改动", "单发伤害有冲突：EE 写 20，Skycoach 写身体 18"],
+  ["Wingman", "小帮手", "手枪", "狙击", 0, "S", "A", "B", 50, 168, 140, "5→8", [], "未改动；爆头 63–86（看头盔）", ""],
+  ["Peacekeeper", "和平捍卫者", "霰弹枪", "霰弹", 0, "S", "A", "C", 99, 63, 104, "5", [], "未改动（Executioner 解锁费用降低）", ""],
+  ["HAVOC Rifle", "哈沃克", "突击步枪", "能量", 0, "A", "A", "B", 20, 672, 224, "24→36", [["sys", "能量储备"]], "储备 3 个弹匣", ""],
+  ["Mastiff", "獒犬霰弹枪", "霰弹枪", "霰弹", 0, "A", "A", "B", 95, 76, 120, "5", [], "未改动（Executioner 解锁费用降低）", ""],
+  ["Triple Take", "三重式狙击枪", "射手步枪", "能量", 0, "S", "B", "C", 66, 78, 86, "6→9", [["buff", "季中加强"], ["sys", "能量储备"]], "开镜射速提高，蓝弹匣 8→9；储备 2 个弹匣", ""],
+  ["G7 Scout", "G7 侦查枪", "射手步枪", "轻型", 0, "B", "B", "A", 33, 246, 135, "12→16", [["nerf", "回到地面"], ["nerf", "削弱"]], "伤害 37→33，射速降低，去掉双发扳机和狙击镜，弹匣缩小", ""],
+  ["M600 Spitfire", "喷火轻机枪", "机枪", "重型", 0, "B", "B", "A", 21, 540, 189, "35→45", [], "未改动", ""],
+  ["RE-45 Auto", "RE-45", "手枪", "能量", 0, "B", "A", "C", 16, 750, 200, "16→24", [["nerf", "削弱"], ["sys", "能量储备"]], "伤害 17→16，紫弹匣 27→24；储备 2 个弹匣", ""],
+  ["EVA-8 Auto", "EVA-8", "霰弹枪", "霰弹", 0, "A", "B", "C", 56, 193, 180, "8", [], "未改动（Executioner 解锁费用降低）", ""],
+  ["Longbow DMR", "长弓", "狙击枪", "狙击", 0, "B", "B", "B", 60, 78, null, "5→10", [], "未改动", ""],
+  ["P2020", "P2020", "手枪", "轻型", 0, "B", "B", "B", 24, 420, 168, "9→12", [], "修复战术激光后坐力 bug", ""],
+  ["Mozambique", "莫桑比克", "霰弹枪", "霰弹", 0, "A", "C", "C", 51, 183, 156, "5", [], "未改动", ""],
+  ["Sentinel", "哨兵", "狙击枪", "狙击", 0, "C", "B", "B", 70, 38, null, "4→7", [], "未改动", ""],
+  ["Rampage LMG", "暴走", "机枪", "重型", 0, "C", "B", "B", 29, 300, 145, "26→40", [], "未改动", ""],
+  ["Bocek Compound Bow", "波塞克复合弓", "射手步枪", "箭矢", 0, "B", "C", "B", 35, 150, null, "无弹匣", [["buff", "季中加强"]], "箭矢储备 40→60，爆炸箭 7→10", ""],
+  ["Devotion LMG", "专注轻机枪", "机枪", "能量", 0, "B", "B", "C", 16, 900, 240, "36→48", [["sys", "能量储备"]], "储备 3 个弹匣；射速 300→900 逐渐加快", ""],
+  ["Charge Rifle", "充能步枪", "狙击枪", "内置电池", 0, "D", "C", "C", 75, 25, null, "8", [["buff", "季中加强"]], "最远距离伤害 99→110，选择射击惩罚 40%→25%", ""],
+];
+
+const rows = RAW.map(r => {
+  const tiers = [r[5], r[6], r[7]].filter(Boolean).map(t => T[t]);
+  const score = tiers.reduce((a, b) => a + b, 0) / tiers.length;
+  return {
+    name: r[0], cn: r[1], cls: r[2], ammo: r[3], cp: !!r[4],
+    sky: r[5], ee: r[6], rm: r[7], score,
+    spread: Math.max(...tiers) - Math.min(...tiers),
+    dmg: r[8], rpm: r[9], dps: r[10], mag: r[11], tags: r[12], chg: r[13], conflict: r[14],
+  };
+});
+rows.sort((a, b) => b.score - a.score || a.spread - b.spread || (b.dps ?? 0) - (a.dps ?? 0));
+rows.forEach((r, i) => r.rank = i + 1);
+
+// KPI
+const best = rows[0], floor = rows.filter(r => !r.cp)[0];
+const topDps = [...rows].filter(r => r.dps != null).sort((a, b) => b.dps - a.dps)[0];
+const contested = [...rows].sort((a, b) => b.spread - a.spread || b.score - a.score)[0];
+document.getElementById("kpis").innerHTML = [
+  ["综合第一（空投）", best.cn, best.name + " · " + best.score.toFixed(2)],
+  ["综合第一（地面武器）", floor.cn, floor.name + " · " + floor.score.toFixed(2)],
+  ["理论 DPS 最高", topDps.cn, topDps.dps + " DPS（满速）"],
+  ["争议最大", contested.cn, "三份榜单：" + [contested.sky, contested.ee, contested.rm].join(" / ")],
+].map(([l, v, n]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div><div class="note">${n}</div></div>`).join("");
+
+// 筛选
+const classes = ["全部", ...new Set(rows.map(r => r.cls)), "空投"];
+let activeCls = "全部", query = "", sortKey = "score", sortDir = -1;
+const filters = document.getElementById("filters");
+filters.innerHTML = classes.map(c => `<button class="chip" type="button" data-cls="${c}" aria-pressed="${c === "全部"}">${c}</button>`).join("")
+  + `<input type="search" id="q" placeholder="搜索武器（中/英）">`;
+filters.addEventListener("click", e => {
+  const b = e.target.closest("[data-cls]"); if (!b) return;
+  activeCls = b.dataset.cls;
+  filters.querySelectorAll("[data-cls]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+document.getElementById("q").addEventListener("input", e => { query = e.target.value.trim().toLowerCase(); render(); });
+
+document.querySelectorAll("th.sortable").forEach(th => th.addEventListener("click", () => {
+  const k = th.dataset.key;
+  sortDir = sortKey === k ? -sortDir : (k === "name" || k === "cls" || k === "rank" ? 1 : -1);
+  sortKey = k;
+  document.querySelectorAll("th.sortable").forEach(x => x.classList.remove("sorted-asc", "sorted-desc"));
+  th.classList.add(sortDir === 1 ? "sorted-asc" : "sorted-desc");
+  render();
+}));
+
+const tierCell = t => t ? `<span class="tier ${t}">${t}</span>` : `<span class="tier none" title="空投武器单独排名">—</span>`;
+const fmt = v => v == null ? "—" : v;
+
+function render() {
+  let list = rows.filter(r =>
+    (activeCls === "全部" || (activeCls === "空投" ? r.cp : r.cls === activeCls)) &&
+    (!query || r.name.toLowerCase().includes(query) || r.cn.includes(query)));
+  list = [...list].sort((a, b) => {
+    const x = a[sortKey], y = b[sortKey];
+    if (x == null) return 1; if (y == null) return -1;
+    if (typeof x === "string") return x.localeCompare(y, "zh") * sortDir;
+    return (x - y) * sortDir || a.rank - b.rank;
+  });
+  document.querySelector("#tbl tbody").innerHTML = list.map(r => `
+    <tr>
+      <td class="rank">${r.rank}</td>
+      <td class="name"><b>${r.cn}${r.cp ? '<span class="cp">空投</span>' : ""}</b><small>${r.name}</small></td>
+      <td class="nw">${r.cls}</td>
+      <td class="nw">${r.ammo}</td>
+      <td class="score-cell"><div class="score"><div class="track"><div class="fill" style="width:${r.score / 4 * 100}%"></div></div><span class="v">${r.score.toFixed(2)}</span></div>
+        <div class="spread ${r.spread >= 2 ? "hi" : ""}">分歧 ${r.spread}</div></td>
+      <td>${tierCell(r.sky)}</td>
+      <td>${tierCell(r.ee)}</td>
+      <td>${tierCell(r.rm)}</td>
+      <td class="num">${fmt(r.dmg)}${r.conflict ? ` <span class="flag" title="${r.conflict}">⚑</span>` : ""}</td>
+      <td class="num">${fmt(r.rpm)}</td>
+      <td class="num">${fmt(r.dps)}</td>
+      <td class="num">${r.mag}</td>
+      <td class="chg">${r.tags.map(([k, t]) => `<span class="tag ${k}">${t}</span>`).join("")}<div>${r.chg}</div></td>
+    </tr>`).join("");
+}
+render();
+
+// 主题切换
+document.getElementById("themeBtn").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+</script>
+</body>
+</html>
