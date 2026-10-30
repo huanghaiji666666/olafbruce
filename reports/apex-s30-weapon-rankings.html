@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apex 武器排行 S30</title>
+<meta name="description" content="Apex 英雄第 30 赛季「Marked」全部 29 把武器的数据排行：综合评级、单发伤害、射速、理论 DPS、弹匣与本赛季改动。">
+<style>
+:root{
+  color-scheme:light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --track:#cde2fb;
+  --tier-cp:#eb6834; --tier-s:#1c5cab; --tier-a:#2a78d6; --tier-b:#5598e7; --tier-c:#86b6ef;
+  --good:#006300; --bad:#d03b3b; --warn:#fab219; --chip:#f0efec;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --track:#184f95;
+    --tier-cp:#d95926; --tier-s:#86b6ef; --tier-a:#5598e7; --tier-b:#3987e5; --tier-c:#256abf;
+    --good:#0ca30c; --bad:#e66767; --warn:#fab219; --chip:#262625;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --track:#184f95;
+  --tier-cp:#d95926; --tier-s:#86b6ef; --tier-a:#5598e7; --tier-b:#3987e5; --tier-c:#256abf;
+  --good:#0ca30c; --bad:#e66767; --warn:#fab219; --chip:#262625;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--page);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--s1);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1400px;margin:0 auto;padding:0 16px}
+header{padding:40px 0 20px}
+.eyebrow{font-size:13px;color:var(--ink-2);letter-spacing:.04em;text-transform:uppercase}
+h1{font-size:30px;line-height:1.2;margin:6px 0 10px;font-weight:700}
+.lede{color:var(--ink-2);max-width:760px;margin:0}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;font-size:13px;cursor:pointer}
+.btn:hover{border-color:var(--axis)}
+.btn[aria-pressed="true"]{background:var(--s1);color:#fff;border-color:var(--s1)}
+section{margin:28px 0}
+h2{font-size:20px;margin:0 0 4px}
+.sub{color:var(--ink-2);margin:0 0 14px;font-size:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tile .label{font-size:13px;color:var(--ink-2)}
+.tile .value{font-size:34px;font-weight:600;line-height:1.15;margin-top:4px}
+.tile .foot{font-size:13px;color:var(--muted);margin-top:4px}
+.tier-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.tier h3{font-size:14px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.tier h3 .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+.tier h3 .cnt{color:var(--muted);font-weight:400;margin-left:auto}
+.tier ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.tier li{border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:14px;display:block;background:var(--page)}
+.tier li .en{display:block;color:var(--muted);font-size:12px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.tablewrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:1320px;font-size:13px}
+th,td{padding:9px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--grid)}
+th{font-size:12px;color:var(--ink-2);font-weight:600;white-space:nowrap;background:var(--surface);position:sticky;top:0;z-index:1}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--ink)}
+th .arrow{color:var(--muted);font-size:10px;margin-left:3px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.rank{color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right;width:40px}
+td.nw{white-space:nowrap}
+td .name{font-weight:600;white-space:nowrap}
+td .en{display:block;color:var(--muted);font-size:12px;white-space:nowrap}
+td.note{min-width:210px;color:var(--ink-2);font-size:13px}
+td.chg{min-width:170px;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--page);white-space:nowrap}
+.badge .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.meter{display:flex;align-items:center;gap:8px;min-width:110px}
+.meter .bar{flex:1;height:8px;border-radius:4px;background:var(--track);overflow:hidden}
+.meter .bar i{display:block;height:100%;border-radius:4px;background:var(--s1)}
+.meter b{font-variant-numeric:tabular-nums;font-weight:600;min-width:28px;text-align:right}
+.chg .up{color:var(--good);font-weight:600}
+.chg .down{color:var(--bad);font-weight:600}
+.chg .same{color:var(--muted)}
+.chg .mid{color:var(--ink-2);font-weight:600}
+.votes{color:var(--muted);font-size:12px;max-width:120px}
+.legend{display:flex;gap:16px;font-size:13px;color:var(--ink-2);margin:0 0 10px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.chart{position:relative}
+.chart .axis{display:grid;grid-template-columns:150px 1fr 54px;font-size:11px;color:var(--muted);margin-bottom:6px}
+.chart .axis .ticks{position:relative;height:14px}
+.chart .axis .ticks span{position:absolute;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.row{display:grid;grid-template-columns:150px 1fr 54px;align-items:center;height:26px;gap:0}
+.row .lab{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:10px}
+.row .trk{position:relative;height:100%;background-image:linear-gradient(to right,var(--grid) 1px,transparent 1px);background-size:20% 100%;border-left:1px solid var(--axis)}
+.row .bar{position:absolute;left:0;top:4px;height:18px;border-radius:0 4px 4px 0;background:var(--s1);outline:none;cursor:default}
+.row .bar.cp{background:var(--s2)}
+.row .bar:focus-visible{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--s1)}
+.row .val{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums;padding-left:8px;visibility:hidden}
+.row.labeled .val{visibility:visible}
+.row:hover .val{visibility:visible}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--page);font-size:12px;padding:6px 9px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-110%);opacity:0;transition:opacity .08s;z-index:5}
+.tip.show{opacity:1}
+.changes{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+.changes table{min-width:0;font-size:13px}
+.changes th{position:static}
+.changes h3{font-size:15px;margin:0 0 8px}
+.changes .d{color:var(--muted);font-weight:400;font-size:12px}
+.next ul,.src ul{margin:0;padding-left:20px}
+.next li,.src li{margin:4px 0}
+.warn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:12px;color:var(--ink-2);background:var(--page)}
+.warn i{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block}
+footer{color:var(--muted);font-size:12px;padding:24px 0 40px}
+@media (max-width:640px){
+  h1{font-size:24px}
+  .row,.chart .axis{grid-template-columns:104px 1fr 48px}
+  .row .lab{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="topbar">
+    <div>
+      <div class="eyebrow">Apex Legends · Season 30 「Marked」 · 数据截至 2026-10-30</div>
+      <h1>Apex 英雄 第 30 赛季武器数据排行</h1>
+      <p class="lede">覆盖本赛季全部 29 把武器：综合评级、单发伤害、射速、理论 DPS、弹匣容量与本赛季改动。综合评级取四份 S30 评测的共识，数值以 8 月 4 日赛季补丁与 9 月 14 日中期补丁为准。</p>
+    </div>
+    <button class="btn" id="themeBtn" type="button" aria-pressed="false">切换深色</button>
+  </div>
+</header>
+
+<section>
+  <div class="tiles">
+    <div class="card tile"><div class="label">当前赛季</div><div class="value">S30</div><div class="foot">Marked · 2026-08-04 上线，9-15 进入 Split 2</div></div>
+    <div class="card tile"><div class="label">武器总数</div><div class="value">29</div><div class="foot">其中 3 把空投专属：Kraber、L-STAR、30-30</div></div>
+    <div class="card tile"><div class="label">最高理论 DPS</div><div class="value">240</div><div class="foot">专注轻机枪满转；全自动枪最高为哈沃克 224</div></div>
+    <div class="card tile"><div class="label">本赛季 削弱 / 加强</div><div class="value">5 / 4</div><div class="foot">削：R-99、转换者、赫姆洛克、RE-45、G7 · 强：30-30、三重式、博塞克、充能步枪</div></div>
+  </div>
+</section>
+
+<section id="tier">
+  <h2>综合评级一览</h2>
+  <p class="sub">四份评测取平均后分档（方法见页尾）。空投武器单列，S 档为地面枪中的当前版本答案。</p>
+  <div class="tier-board" id="tierBoard"></div>
+</section>
+
+<section id="rank">
+  <h2>全武器数据排行</h2>
+  <p class="sub">点击列标题可排序；默认按综合评分排序，同分按理论 DPS。DPS = 单发伤害 × 射速 ÷ 60，为身体命中、不计换弹的理论值，栓动 / 蓄力武器为近似。</p>
+  <div class="filters" id="filters" role="group" aria-label="按类别筛选"></div>
+  <div class="tablewrap">
+    <table id="tbl">
+      <thead><tr>
+        <th>#</th>
+        <th>武器</th>
+        <th>类别</th>
+        <th>弹药</th>
+        <th class="num sortable" data-key="dmg">单发伤害<span class="arrow"></span></th>
+        <th class="num sortable" data-key="rpm">射速 RPM<span class="arrow"></span></th>
+        <th class="num sortable" data-key="dps">理论 DPS<span class="arrow"></span></th>
+        <th>弹匣 (基础→紫)</th>
+        <th>评级</th>
+        <th class="sortable" data-key="score">综合评分<span class="arrow"></span></th>
+        <th>各来源评级</th>
+        <th>本赛季改动</th>
+        <th>简评</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="dps">
+  <h2>理论 DPS 排行</h2>
+  <p class="sub">全部 29 把武器按理论 DPS 排序。悬停或用键盘聚焦任一条可查看单发伤害与射速；完整数值见上表。</p>
+  <div class="card">
+    <div class="legend"><span><i style="background:var(--s1)"></i>地面武器</span><span><i style="background:var(--s2)"></i>空投武器</span></div>
+    <div class="chart" id="chart"></div>
+    <p class="sub" style="margin:12px 0 0">注：专注轻机枪取满转速 900 RPM；哈沃克需 Turbocharger 才能免预热；克雷贝尔、哨兵、长弓、充能步枪、博塞克按循环射速折算，实际价值更多取决于单发伤害与命中。</p>
+  </div>
+</section>
+
+<section id="changes">
+  <h2>本赛季武器改动</h2>
+  <p class="sub">来自 8 月 4 日赛季补丁与 9 月 14 日 Marked 中期补丁。</p>
+  <div class="changes">
+    <div class="card">
+      <h3>赛季上线补丁 <span class="d">2026-08-04</span></h3>
+      <table>
+        <thead><tr><th>武器</th><th>改动</th></tr></thead>
+        <tbody>
+          <tr><td>30-30 连发枪</td><td><span class="chg"><span class="up">↑ 进入空投</span></span>：伤害 43→51，ADS 蓄力 0.4s→0.25s，换弹加快，移除 Dual Shell，新增 Shattercaps（7 弹丸 × 8），储备 50 发</td></tr>
+          <tr><td>G7 侦察枪</td><td><span class="chg"><span class="down">↓ 退出空投</span></span>：伤害 37→33，射速下调，移除 Double Tap，不可装狙击镜，弹匣 白 15→12 / 蓝 18→14 / 紫 20→16</td></tr>
+          <tr><td>赫姆洛克</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：伤害 22→21，破障充能 CD 25s→30s，对硬光 / 建筑伤害 -50%</td></tr>
+          <tr><td>转换者</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：伤害 19→18，Double Tap 每发 15→14，弹匣 20/24/26/30→18/20/22/26</td></tr>
+          <tr><td>RE-45</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：伤害 17→16，紫弹匣 27→24</td></tr>
+          <tr><td>R-99</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：伤害 13→12</td></tr>
+          <tr><td>能量武器</td><td><span class="chg"><span class="mid">⟳ 机制重做</span></span>：移除能量弹药箱，改为自带储备（哈沃克 / 复仇女神 / 专注 3 匣，L-STAR 4 匣，RE-45 / 伏特 / 三重式 2 匣），每 18 秒回一匣，射击与换弹时暂停</td></tr>
+          <tr><td>专注轻机枪</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：Turbocharger 解锁点数 425→500</td></tr>
+          <tr><td>金色武器</td><td><span class="chg"><span class="mid">⟳ 机制重做</span></span>：取消金枪轮换，移除金配件，无挂件的金枪一律配 Accelerator</td></tr>
+          <tr><td>腐化配件</td><td><span class="chg"><span class="mid">⟳ 新增</span></span>：Overflowing 弹匣、Headseeker 枪管、战术激光、Agile 标准枪托、Rapid 狙击枪托，每把枪限装一件</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Marked 中期补丁 <span class="d">2026-09-14</span></h3>
+      <table>
+        <thead><tr><th>武器</th><th>改动</th></tr></thead>
+        <tbody>
+          <tr><td>三重式狙击枪</td><td><span class="chg"><span class="up">↑ 加强</span></span>：ADS 射速提升，蓝弹匣 8→9</td></tr>
+          <tr><td>博塞克复合弓</td><td><span class="chg"><span class="up">↑ 加强</span></span>：箭储备 40→60，每次充能爆炸箭 7→10（Sparrow 箭袋 50→70，9→12）</td></tr>
+          <tr><td>充能步枪</td><td><span class="chg"><span class="up">↑ 加强</span></span>：最远距离伤害 99→110（200m 以上），选射伤害惩罚 40%→25%</td></tr>
+          <tr><td>Executioner（霰弹挂件）</td><td><span class="chg"><span class="up">↑ 加强</span></span>：解锁点数 375→275</td></tr>
+          <tr><td>Agile 标准枪托（腐化）</td><td><span class="chg"><span class="down">↓ 削弱</span></span>：移速加成不再与 Maggie / Gibraltar 的相关被动叠加</td></tr>
+          <tr><td>P2020</td><td><span class="chg"><span class="same">修复</span></span>：战术激光未正确降低后坐力的 bug</td></tr>
+          <tr><td>首个物资箱</td><td><span class="chg"><span class="same">调整</span></span>：Weapon Assist 现可刷出全部基础武器</td></tr>
+          <tr><td>哨兵 / C.A.R.</td><td><span class="chg"><span class="same">修复 (10-12 周)</span></span>：修复可改变弹匣、换弹与射速的武器漏洞</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="next" class="next">
+  <h2>下赛季预告：S31</h2>
+  <p class="sub"><span class="warn"><i></i>未定稿</span>&nbsp; S31 据多家媒体报道将于 2026-11-05 上线（尚无 Respawn 官方确认）。以下为 10 月 29 日的官方预告与前瞻报道，数值在正式补丁说明发布前均可能变动。</p>
+  <div class="card">
+    <ul>
+      <li><b>双持小帮手（Akimbo Wingman）</b>：已官宣。双持时爆头伤害每发 68→56，身体伤害不变；弹匣 基础 10 / 扩容 12 / 14 / 16，Overflowing 20。</li>
+      <li><b>猎兽</b>：预计改为纯连发，移除全自动模式。</li>
+      <li><b>赫姆洛克</b>：预计回归经典连发，移除 Elite 变体。</li>
+      <li><b>EVA-8</b>：预计获得 Disruptor 弹（对护盾额外伤害，数值未定）。</li>
+      <li><b>双持莫桑比克</b>：预计进入空投池；新增「Strongholds」据点作为空投的演进形态。</li>
+      <li><b>伏特</b>：新增神话皮肤「Cryptic Core」；本赛季其他传奇改动（Crypto 重做、Revenant / Lifeline 加强）不影响武器数值。</li>
+    </ul>
+  </div>
+</section>
+
+<section id="sources" class="src">
+  <h2>数据来源与方法</h2>
+  <div class="card">
+    <p style="margin:0 0 10px"><b>综合评分</b>：把四份 S30 评测的评级换算成分数（Mythic/S+ = 6，S = 5，A+ = 4.5，A = 4，B+ = 3.5，B = 3，C = 2，D = 1），取平均后折算为百分制；≥75 为 S，65–74 为 A，50–64 为 B，其余为 C；空投武器固定单列。排名同分时按理论 DPS。Playhub 一文把 G7 列为空投武器，与本赛季轮换不符，该条及其 30-30 评级已剔除。「各来源评级」列顺序为 EverythingEdinburgh / Skycoach / Playhub / Two Average Gamers，「—」表示该来源未评。</p>
+    <p style="margin:0 0 10px"><b>数值口径</b>：单发伤害为身体命中；霰弹为全部弹丸命中之和；射速为官方 / 社区实测 RPM；弹匣为基础→紫色扩容。统计截至 2026-10-30，不含 S31 预告改动。</p>
+    <ul>
+      <li>EA 官方《Apex Legends: Marked Midseason Patch Notes》（2026-09-14）— <a href="https://www.ea.com/games/apex-legends/apex-legends/news/marked-midseason-patch-notes" target="_blank" rel="noopener">ea.com</a></li>
+      <li>Game Rant《Apex Legends Season 30 Finally Out Now, Read the Patch Notes Here》（2026-08-04）— <a href="https://gamerant.com/apex-legends-season-30-bloodhound-buff-patch-notes/" target="_blank" rel="noopener">gamerant.com</a></li>
+      <li>EverythingEdinburgh《Best Guns in Apex Legends: Season 30 Weapon Tier List (29 Guns Ranked)》（2026-09-25，提供全部数值）— <a href="https://everythingedinburgh.com/games/gaming/apex-legends-best-guns/" target="_blank" rel="noopener">everythingedinburgh.com</a></li>
+      <li>Skycoach《Apex Legends Weapon Tier List Season 30》（2026-09-03）— <a href="https://skycoach.gg/blog/apex-legends/articles/weapon-tier-list-season-30" target="_blank" rel="noopener">skycoach.gg</a></li>
+      <li>Playhub《Best Apex Legends Weapons for Season 30》（2026-08-27）— <a href="https://playhub.com/blog/apex-legends/best-weapons-412333" target="_blank" rel="noopener">playhub.com</a></li>
+      <li>Two Average Gamers《Apex Legends Weapon Tier List Season 30 (Split 2)》（2026-09-17）— <a href="https://www.twoaveragegamers.com/apex-legends-weapon-tier-list-season-30/" target="_blank" rel="noopener">twoaveragegamers.com</a></li>
+      <li>GameRiv《Apex Legends Season 31 Early Patch Notes》（2026-10-29）— <a href="https://gameriv.com/apex-legends-season-31-early-patch-notes-crypto-rework-legend-buffs-and-strongholds/" target="_blank" rel="noopener">gameriv.com</a></li>
+      <li>esports.gg《Apex Legends Season 31 release date and patch notes》（2026-10）— <a href="https://esports.gg/news/apex-legends/apex-legends-season-31-release-date-and-patch-notes-crypto-rework-revenant-and-lifeline-buffs/" target="_blank" rel="noopener">esports.gg</a></li>
+      <li>breach.gg《Apex Legends updates, week of 2026-10-12》— <a href="https://breach.gg/blog/apex-legends-updates-2026-10-12" target="_blank" rel="noopener">breach.gg</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>Apex Legends 为 Electronic Arts / Respawn Entertainment 商标，本页为非官方整理。</footer>
+</div>
+
+<script>
+const WEAPONS = [
+ {name:"克雷贝尔狙击枪",en:"Kraber .50-Cal",cls:"狙击枪",ammo:"空投专属",dmg:150,rpm:38,dps:95,approx:true,mag:"4（固定）",tier:"空投",score:100,votes:"S / Mythic / Mythic / S+",ct:"same",chg:"无改动",note:"一枪定胜负：爆头可直接击倒紫头盔，身体 150 两枪倒，仍是空投里最抢手的枪。"},
+ {name:"L-STAR 能量机枪",en:"L-STAR EMG",cls:"轻机枪",ammo:"能量（空投）",dmg:20,rpm:600,dps:200,mag:"过热机制",tier:"空投",score:100,votes:"S / Mythic / Mythic / S+",ct:"same",chg:"无改动",note:"无需换弹、持续压制极强，带 Redline 挂件，拉扯战里最难对付。"},
+ {name:"30-30 连发枪",en:"30-30 Repeater",cls:"射手步枪",ammo:"重型（空投）",dmg:51,rpm:139,dps:118,mag:"50 发储备",tier:"空投",score:100,votes:"S / Mythic / — / S+",ct:"up",chg:"↑ 进空投：伤害 43→51，蓄力 0.4→0.25s，新增 Shattercaps",note:"本赛季新空投枪：蓄力更快，中远距离单发压制顶级，Shattercaps 腰射还能打近战。"},
+ {name:"猎兽连发手枪",en:"Prowler Burst PDW",cls:"冲锋枪",ammo:"重型",dmg:16,rpm:714,dps:190,mag:"20→35",tier:"S",score:77,votes:"A / S / S / A+",ct:"same",chg:"无改动（其余 SMG 被削）",note:"SMG 中唯一未被削弱，五连发近战爆发最高，Overflowing 弹匣适配度极高。"},
+ {name:"复仇女神连发步枪",en:"Nemesis Burst AR",cls:"突击步枪",ammo:"能量",dmg:17,rpm:637,dps:180,mag:"20→32",tier:"S",score:77,votes:"S / S / A / A+",ct:"mid",chg:"⟳ 能量储备制：起始 3 匣，18s 回一匣",note:"捡起即战，两次连发可打倒无甲敌人，架枪守点最稳。"},
+ {name:"小帮手",en:"Wingman",cls:"手枪",ammo:"狙击弹",dmg:50,rpm:168,dps:140,mag:"5→8",tier:"S",score:75,votes:"A / S / S / A",ct:"same",chg:"无改动",note:"两枪打倒 100 血敌人，上限极高；腐化战术激光加快换弹补足短板。"},
+ {name:"三重式狙击枪",en:"Triple Take",cls:"射手步枪",ammo:"能量",dmg:66,rpm:78,dps:86,mag:"6→9",tier:"S",score:75,votes:"B / S / S / S",ct:"up",chg:"↑ 中期：ADS 射速提升，蓝弹匣 8→9；能量储备制",note:"低弹药赛季里不用频繁换弹，中远距离消耗、开空间的首选。"},
+ {name:"R-99 冲锋枪",en:"R-99 SMG",cls:"冲锋枪",ammo:"轻型",dmg:12,rpm:1080,dps:216,mag:"17→24",tier:"A",score:73,votes:"S / A / S / B+",ct:"down",chg:"↓ 伤害 13→12",note:"射速依旧最快，削 1 点伤害后一匣打倒变难，前期近战仍强。"},
+ {name:"转换者冲锋枪",en:"Alternator SMG",cls:"冲锋枪",ammo:"轻型",dmg:18,rpm:600,dps:180,mag:"18→26",tier:"A",score:73,votes:"S / A / S / B+",ct:"down",chg:"↓ 伤害 19→18，全档弹匣缩减；Double Tap 解锁 375→500",note:"最易上手的 SMG，被削后一匣容错明显降低。"},
+ {name:"赫姆洛克连发步枪",en:"Hemlok Burst AR",cls:"突击步枪",ammo:"重型",dmg:21,rpm:462,dps:162,mag:"16→25",tier:"A",score:73,votes:"S / A / S / B+",ct:"down",chg:"↓ 伤害 22→21，破障充能 CD 25→30s，对建筑伤害 -50%",note:"中距离点射压制依旧好用，但打墙、打炮台的能力明显减弱。"},
+ {name:"VK-47 平行步枪",en:"VK-47 Flatline",cls:"突击步枪",ammo:"重型",dmg:20,rpm:600,dps:200,mag:"20→30",tier:"A",score:72,votes:"A / S / A / —",ct:"same",chg:"无改动",note:"未被削弱的万金油，后坐力好控，配什么副手都行。"},
+ {name:"伏特冲锋枪",en:"Volt SMG",cls:"冲锋枪",ammo:"能量",dmg:16,rpm:720,dps:192,mag:"20→27",tier:"A",score:72,votes:"A / S / A / —",ct:"mid",chg:"⟳ 能量储备制：起始 2 匣",note:"近中距离都稳，后坐力比猎兽好控，储备制让续航不再是问题。"},
+ {name:"和平捍卫者",en:"Peacekeeper",cls:"霰弹枪",ammo:"霰弹",dmg:99,rpm:63,dps:104,mag:"5（固定）",tier:"A",score:72,votes:"A / S / A / —",ct:"same",chg:"无改动；中期 Executioner 解锁 375→275",note:"近战 SMG 被削后相对走强，一枪 99 可直接定胜负。"},
+ {name:"R-301 卡宾枪",en:"R-301 Carbine",cls:"突击步枪",ammo:"轻型",dmg:15,rpm:810,dps:203,mag:"18→28",tier:"A",score:69,votes:"A / A / A / A+",ct:"same",chg:"无改动",note:"稳定无短板，Overflowing 弹匣的最佳载体之一。"},
+ {name:"哈沃克步枪",en:"HAVOC Rifle",cls:"突击步枪",ammo:"能量",dmg:20,rpm:672,dps:224,mag:"24→36",tier:"A",score:67,votes:"A / A / A / —",ct:"mid",chg:"⟳ 能量储备制：起始 3 匣",note:"全自动枪里理论 DPS 最高，但要 Turbocharger 才能免预热。"},
+ {name:"C.A.R. 冲锋枪",en:"C.A.R. SMG",cls:"冲锋枪",ammo:"轻型 / 重型",dmg:14,rpm:930,dps:217,mag:"20→30",tier:"A",score:67,votes:"S / A / B / —",ct:"same",chg:"无改动（10 月修复射速漏洞）",note:"双弹药兼容是最大优势，DPS 仅次于哈沃克；各来源评价分歧较大。"},
+ {name:"RE-45 自动手枪",en:"RE-45 Auto",cls:"手枪",ammo:"能量",dmg:16,rpm:750,dps:200,mag:"16→24",tier:"A",score:67,votes:"A / B / S / A",ct:"down",chg:"↓ 伤害 17→16，紫弹匣 27→24；能量储备制",note:"开局神器，削弱后不再是顶级近战，但能量回充让续航变好。"},
+ {name:"獒犬霰弹枪",en:"Mastiff Shotgun",cls:"霰弹枪",ammo:"霰弹",dmg:95,rpm:76,dps:120,mag:"5（固定）",tier:"A",score:67,votes:"A / A / A / —",ct:"same",chg:"无改动",note:"近战上限高，但本赛季存在感下降。"},
+ {name:"EVA-8 自动霰弹枪",en:"EVA-8 Auto",cls:"霰弹枪",ammo:"霰弹",dmg:56,rpm:193,dps:180,mag:"8（固定）",tier:"B",score:61,votes:"B / A / A / —",ct:"same",chg:"无改动",note:"容错高的自动霰弹，伤害偏低；下赛季预计加 Disruptor 弹。"},
+ {name:"G7 侦察枪",en:"G7 Scout",cls:"射手步枪",ammo:"轻型",dmg:33,rpm:246,dps:135,mag:"10→16",tier:"B",score:58,votes:"B / B / — / A+",ct:"down",chg:"↓ 退出空投：伤害 37→33，射速下调，移除 Double Tap，弹匣缩减",note:"回归地面后明显变弱，搭 Rapid 狙击枪托仍可用。"},
+ {name:"专注轻机枪",en:"Devotion LMG",cls:"轻机枪",ammo:"能量",dmg:16,rpm:900,dps:240,approx:true,mag:"36→48",tier:"B",score:56,votes:"B / B / B / A+",ct:"down",chg:"↓ Turbocharger 解锁 425→500；能量储备制",note:"满转 240 DPS 全场最高，但依赖 Turbocharger 和储备管理。"},
+ {name:"莫桑比克霰弹枪",en:"Mozambique Shotgun",cls:"霰弹枪",ammo:"霰弹",dmg:51,rpm:183,dps:156,mag:"5（固定）",tier:"B",score:56,votes:"C / A / A / —",ct:"same",chg:"无改动",note:"开局应急不错，中后期常被替换。"},
+ {name:"长弓 DMR",en:"Longbow DMR",cls:"狙击枪",ammo:"狙击弹",dmg:60,rpm:78,dps:78,approx:true,mag:"5→10",tier:"B",score:56,votes:"B / B / A / —",ct:"same",chg:"无改动",note:"最易上手的狙，但本赛季远程生态偏弱。"},
+ {name:"哨兵狙击枪",en:"Sentinel",cls:"狙击枪",ammo:"狙击弹",dmg:70,rpm:38,dps:44,approx:true,mag:"4→7",tier:"B",score:56,votes:"B / C / S / —",ct:"same",chg:"无改动（10 月修复弹匣 / 换弹漏洞）",note:"充能后破甲很强，来源分歧大，非常吃手感。"},
+ {name:"P2020 手枪",en:"P2020",cls:"手枪",ammo:"轻型",dmg:24,rpm:420,dps:168,mag:"9→12",tier:"B",score:54,votes:"B / B / B / A",ct:"same",chg:"中期修复战术激光后坐力 bug",note:"双持 P2020 + 战术激光是本赛季的亮点玩法。"},
+ {name:"M600 喷火轻机枪",en:"M600 Spitfire",cls:"轻机枪",ammo:"重型",dmg:21,rpm:540,dps:189,mag:"35→45",tier:"B",score:50,votes:"B / B / B / —",ct:"same",chg:"无改动",note:"大弹匣压枪稳，但机动性差。"},
+ {name:"博塞克复合弓",en:"Bocek Compound Bow",cls:"射手步枪",ammo:"箭（自带）",dmg:35,rpm:150,dps:88,approx:true,mag:"无弹匣",tier:"B",score:50,votes:"C / B / C / S",ct:"up",chg:"↑ 中期：箭储备 40→60，爆炸箭 7→10",note:"不占弹药经济，中期加强后评价两极。"},
+ {name:"暴走轻机枪",en:"Rampage LMG",cls:"轻机枪",ammo:"重型",dmg:29,rpm:300,dps:145,mag:"26→40",tier:"C",score:39,votes:"B / C / C / —",ct:"same",chg:"无改动",note:"单发高但射速慢，需铝热剂激活才有竞争力。"},
+ {name:"充能步枪",en:"Charge Rifle",cls:"狙击枪",ammo:"内置电池",dmg:75,rpm:25,dps:31,approx:true,mag:"8（固定）",tier:"C",score:38,votes:"C / D / D / S",ct:"up",chg:"↑ 中期：最远伤害 99→110（>200m），选射惩罚 40%→25%",note:"中期加强后远程更痛，但多数来源仍认为过于情境化。"}
+];
+WEAPONS.forEach((w,i)=>w.rank=i+1);
+
+const TIERS=[["空投","空投武器","--tier-cp"],["S","S 档","--tier-s"],["A","A 档","--tier-a"],["B","B 档","--tier-b"],["C","C 档","--tier-c"]];
+const tierVar=t=>TIERS.find(x=>x[0]===t)[2];
+
+/* 评级一览 */
+const tb=document.getElementById("tierBoard");
+TIERS.forEach(([key,label,v])=>{
+  const ws=WEAPONS.filter(w=>w.tier===key);
+  const d=document.createElement("div");d.className="card tier";
+  d.innerHTML=`<h3><span class="sw" style="background:var(${v})"></span>${label}<span class="cnt">${ws.length}</span></h3><ul>${ws.map(w=>`<li><span>${w.name}</span><span class="en">${w.en}</span></li>`).join("")}</ul>`;
+  tb.appendChild(d);
+});
+
+/* 筛选 */
+const CLASSES=["全部","突击步枪","冲锋枪","轻机枪","射手步枪","狙击枪","霰弹枪","手枪","空投"];
+let filter="全部", sortKey="score", sortDir=-1;
+const fl=document.getElementById("filters");
+CLASSES.forEach(c=>{
+  const b=document.createElement("button");b.className="btn";b.type="button";b.textContent=c;b.setAttribute("aria-pressed",c===filter);
+  b.onclick=()=>{filter=c;[...fl.children].forEach(x=>x.setAttribute("aria-pressed",x.textContent===c));renderTable();};
+  fl.appendChild(b);
+});
+
+/* 表格 */
+const tbody=document.querySelector("#tbl tbody");
+const ctClass={up:"up",down:"down",same:"same",mid:"mid"};
+function renderTable(){
+  let rows=WEAPONS.filter(w=>filter==="全部"||(filter==="空投"?w.tier==="空投":w.cls===filter));
+  rows=rows.slice().sort((a,b)=>{
+    const d=(a[sortKey]-b[sortKey])*sortDir;
+    return d!==0?d:(a.rank-b.rank);
+  });
+  tbody.innerHTML=rows.map(w=>`<tr>
+    <td class="rank">${w.rank}</td>
+    <td><span class="name">${w.name}</span><span class="en">${w.en}</span></td>
+    <td class="nw">${w.cls}</td>
+    <td class="nw">${w.ammo}</td>
+    <td class="num">${w.dmg}</td>
+    <td class="num">${w.approx&&w.en!=="Devotion LMG"?"≈ ":""}${w.rpm}</td>
+    <td class="num">${w.approx?"≈ ":""}${w.dps}</td>
+    <td class="nw">${w.mag}</td>
+    <td><span class="badge"><span class="dot" style="background:var(${tierVar(w.tier)})"></span>${w.tier}</span></td>
+    <td><div class="meter"><div class="bar"><i style="width:${w.score}%"></i></div><b>${w.score}</b></div></td>
+    <td class="votes">${w.votes}</td>
+    <td class="chg"><span class="${ctClass[w.ct]}">${w.chg}</span></td>
+    <td class="note">${w.note}</td>
+  </tr>`).join("");
+  document.querySelectorAll("th.sortable").forEach(th=>{
+    th.querySelector(".arrow").textContent=th.dataset.key===sortKey?(sortDir<0?"▼":"▲"):"";
+  });
+}
+document.querySelectorAll("th.sortable").forEach(th=>{
+  th.onclick=()=>{const k=th.dataset.key;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}renderTable();};
+});
+renderTable();
+
+/* DPS 图 */
+const chart=document.getElementById("chart");
+const MAX=250;
+const byDps=WEAPONS.slice().sort((a,b)=>b.dps-a.dps);
+let html=`<div class="axis"><span></span><div class="ticks">${[0,50,100,150,200,250].map(t=>`<span style="left:${t/MAX*100}%">${t}</span>`).join("")}</div><span></span></div>`;
+byDps.forEach((w,i)=>{
+  const pct=w.dps/MAX*100;
+  html+=`<div class="row${i<5?" labeled":""}"><div class="lab" title="${w.name}">${w.name}</div><div class="trk"><div class="bar${w.tier==="空投"?" cp":""}" style="width:${pct}%" tabindex="0" role="img" aria-label="${w.name}，理论 DPS ${w.dps}，单发 ${w.dmg}，射速 ${w.rpm} RPM" data-i="${i}"></div></div><div class="val">${w.approx?"≈":""}${w.dps}</div></div>`;
+});
+html+=`<div class="tip" id="tip"></div>`;
+chart.innerHTML=html;
+const tip=document.getElementById("tip");
+function showTip(el){
+  const w=byDps[+el.dataset.i];
+  tip.innerHTML=`<b>${w.name}</b> · ${w.en}<br>理论 DPS ${w.approx?"≈":""}${w.dps} · 单发 ${w.dmg} · ${w.rpm} RPM`;
+  const r=el.getBoundingClientRect(), c=chart.getBoundingClientRect();
+  tip.style.left=(r.right-c.left)+"px"; tip.style.top=(r.top-c.top)+"px";
+  tip.classList.add("show");
+}
+chart.addEventListener("mouseover",e=>{const b=e.target.closest(".bar");if(b)showTip(b);});
+chart.addEventListener("mouseout",e=>{if(e.target.closest(".bar"))tip.classList.remove("show");});
+chart.addEventListener("focusin",e=>{const b=e.target.closest(".bar");if(b)showTip(b);});
+chart.addEventListener("focusout",()=>tip.classList.remove("show"));
+
+/* 主题切换 */
+const root=document.documentElement, btn=document.getElementById("themeBtn");
+function applyTheme(t){
+  if(t)root.setAttribute("data-theme",t);else root.removeAttribute("data-theme");
+  const dark=t==="dark"||(!t&&matchMedia("(prefers-color-scheme: dark)").matches);
+  btn.textContent=dark?"切换浅色":"切换深色";btn.setAttribute("aria-pressed",dark);
+}
+let saved=null;try{saved=localStorage.getItem("apex-theme");}catch(e){}
+applyTheme(saved);
+btn.onclick=()=>{
+  const dark=btn.getAttribute("aria-pressed")==="true";
+  const next=dark?"light":"dark";
+  try{localStorage.setItem("apex-theme",next);}catch(e){}
+  applyTheme(next);
+};
+</script>
+</body>
+</html>
